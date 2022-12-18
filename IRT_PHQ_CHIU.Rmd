@@ -60,8 +60,8 @@ knitr::opts_chunk$set(echo = TRUE,
                       message = FALSE,
                       warning = FALSE,
                       fig.align="center",
-                      fig.width=6, 
-                      fig.height=4)
+                      fig.width=7, 
+                      fig.height=3.8)
 
 
 ```
@@ -73,7 +73,7 @@ The Patient Health Questionnaire (PHQ-9) is a commonly-used 9-item rating scale 
 
 One alternative approach for analyzing ordinal rating scales such as the PHQ-9 that involves more than 2 categories of responses is the graded response model [@samejimaGradedResponseModel1997] from item response theory. Item response theory is a family of models that aims to look at the underlying latent traits which are driving test performance; and the graded response model is one such model that deals with ordered polytomous categories. This report outlines the analysis of the PHQ-9 scale using a graded response model.
 
-The structure of this report is as follows: Using a real-world data set of PHQ-9 responses, assumptions for item response theory are explored and reported; then a graded response model is fit to the data set and the results are discussed. The data set and code are provided for reproducibility.
+The structure of this report is as follows: Using a real-world data set of PHQ-9 responses, assumptions for item response theory are explored and reported; then a graded response model is fit to the data set and the results are discussed. At the end of the report, data simulation is carried to examine paramter recovery and sample size estimation. The data set and code are provided for reproducibility. 
 
 # Methods
 
@@ -135,7 +135,7 @@ Using the numerical values of the PHQ-9 ratings, a normal distribution was fit o
 PHQ_num <- PHQ[, 2:10] # select only numerical subset
 var_name <- colnames(PHQ_num) # get variable names
 
-par(mfrow = c(3, 3), mar=c(3, 3, 3, 3)) # set display grid
+par(mfrow = c(3, 3), mar=c(2, 1, 1, 1)) # set display grid
 
 for (i in 1:length(var_name)){
   x = as.numeric(unlist(PHQ_num[var_name[i]][,1]))
@@ -182,6 +182,9 @@ PHQ_num %>%
 
 ```
 
+\newpage
+\
+
 ## Examining Fit using Item Response Theory
 
 ### Assumptions Testing
@@ -189,7 +192,7 @@ PHQ_num %>%
 Item response theory models must meet the following assumptions: unidimensionality, local independence, and monotonicity. Each of the assumptions will be discussed below and the statistical methods used to test for them described.
 
 #### Unidimensionality
-Unidimensionality assumes the items all assess the same one underlying latent trait variable. Unidimensionality was tested         using principal component analysis to check if only one principal could be sufficiently extracted. 
+Unidimensionality assumes the items all assess the same one underlying latent trait variable. Unidimensionality was tested using principal component analysis to check if only one principal could be sufficiently extracted. 
 
 
 (ref:plot3-caption) Scree plot of principal component analysis. The first component explains almost 50% of the variance.
@@ -218,6 +221,9 @@ fviz_eig(PHQ_PCA, addlabels = F, ylim = c(0, 50),
          main = paste(" "))
 
 ```
+\newpage
+
+\
 
 A principal component analysis revealed that 1 component explained about 50% of the variance. Examining the eigenvalues, the first component was the only eigenvalue >1, which is commonly used as a cutoff point for which components are retained. Thus, it can be argued that the assumption of unidimensionality is sufficiently met.
 
@@ -236,6 +242,7 @@ fviz_pca_var(PHQ_PCA, col.var = "cos2",
 
 ```
 
+\newpage
 
 #### Local Independence
 Local independence assumes the items are only related to the latent trait variable being measured and not to any other factors.    Local independence was evaluated using a single factor confirmatory factor analysis and examining the residual correlation         matrix. The root mean square error of approximation (RMSEA) was revealed to be 0.1. The cutoff for calculating the probability of a close fit is commonly suggested at 0.1. The comparative fit index (CFI) was shown to be 0.9. CFI assesses the relative improvement in fit of the model compared with the baseline model, with a suggest cutoff of 0.9. Thus, the assumption of local independence is sufficiently met. (For details on the analysis, please refer to the Appendix.)
@@ -310,7 +317,7 @@ plot(mod2, lwd=1, type = "OCCu", ylim = c(0,1), cex.main = 0.8)
 
 The PHQ-9 has 4 categories for responses, and so there are three threshold parameters: The first threshold indicates the latent trait variable measurement at which there is 50% probability that a respondent would endorse category 1 vs 2. For example, with Item 1, lack of interest, there is a 50% probability that a respondent would endorse either "Not at all" or "Several days" at -1.2 on the latent variable scale. On the other hand, with Item 6, feeling bad about oneself, the 50% probability of endorsing "Not at all" or "Several days" is at -0.7, which indicates a higher latent trait. The second threshold indicates the 50% probability of endorsing category 1 or 2 vs category 3; and the last threshold is category 1,2,3 vs category 4. 
 
-The item threshold parameter is also often referred to as the item difficulty -- where a more "difficult" item requires higher latent trait in order to endorse it. For example, Item 9 is the most difficult, because to endorse "Almost every day" requires a latent trait measure of 7.7; which is higher than any other item. 
+The item threshold parameter is also often referred to as the item difficulty -- where a more "difficult" item requires higher latent trait in order to endorse it. For example, Item 9 is the most difficult, because to endorse "Almost every day" requires a latent trait measure of 7.7; which is higher than any other item. The item threshold parameter is also sometimes referred to as the item location, describing how the item functions along the trait variable.
 
 #### Item Discrimination
 
@@ -323,23 +330,164 @@ The reliability of a measurement tool within item response theory is conceptuali
 
 (ref:plot6-caption) Information Function per Item and Test. Each line corresponds to how much information is provided per item. The second plot of the panel depicts the total information given by the entire test. 
 
-```{r, echo=F, fig.height = 7, fig.cap="(ref:plot6-caption)"}
+```{r, echo=F, fig.height = 5, fig.cap="(ref:plot6-caption)"}
 
-par(mfrow = c(2, 1)) # set display grid
+par(mfrow = c(2, 1), mar=c(3, 2, 1, 1)) # set display grid
 # plot Item Information Function per item
 plot(mod2, type = "IIC",
      main = "Item Information for Each Item",
      cex.main = 0.8,
-     ylim = c(0,2))
+     ylim = c(0,1.7))
 
 # plot Test Information Function
 plot(mod2, type = "IIC", items=0,
      main = "Test Information Function - All Items",
      cex.main = 0.8,
-     ylim = c(0,10))
+     ylim = c(0,7))
+
+```
+\newpage 
+
+## Parameter Recovery and Sample Size Estimation
+
+Data simulation was carried out to examine parameter recovery at different sample sizes (N = 500, 1000, 1500, and 2000).
+
+The following code chunk outlines a function for simulation data, fitting a graded respond model to the simulated data, and then computing the parameter biases and root mean square errors between the original data model and the simulated model. Bias was defined as the average difference between the estimated (i.e. using simulated data) and true values (i.e. from the existing data) of the parameters across each item, while the root mean square error (RMSE) was obtained by taking the square root of the mean of squared deviations of estimated parameter values about their true values. 
+
+The parameters to be recovered include the item threshold (denoted as b in the code chunk) and discrimination (denoted as a in the code chunk). Item threshold refers to the location along the trait variable and there are 3 item thresholds since there are four response categories in the PHQ-9; and discrimination refers to the slope of the curves.
+
+```{r, results = FALSE}
+
+library(mirt)
+# fit grm model on existing data
+model <- mirt(PHQ_num, 
+              itemtype = "graded")
+# function for computing parameter recovery
+itemrecovery <- function(model, sample.size, seed) {
+  # set seed
+  set.seed(seed)
+  # extract original model parameters
+  modelparams <- as.data.frame(coef(model, simplify = TRUE)$items)
+  # simulate new data based on model parameters
+  dat <- simdata(model = model, 
+                 N = sample.size)
+  # fit grm model on simulated data
+  modGRM <- mirt(data = dat, 
+                 itemtype = 'graded', 
+                 verbose = FALSE, 
+                 SE = TRUE)
+  # extract item parameters
+  parameters <- as.data.frame(coef(modGRM, simplify = TRUE)$items)
+  # compute bias
+  bias.a <- round(mean(parameters[,1]-modelparams[,1]), 3)
+  bias.b1 <- round(mean(parameters[,2]-modelparams[,2]), 3)
+  bias.b2 <- round(mean(parameters[,3]-modelparams[,3]), 3)
+  bias.b3 <- round(mean(parameters[,4]-modelparams[,4]), 3)
+  rmse.a <- round(sqrt(mean((parameters[,1]-modelparams[,1])^2)), 3)
+  rmse.b1 <- round(sqrt(mean((parameters[,2]-modelparams[,2])^2)), 3)
+  rmse.b2 <- round(sqrt(mean((parameters[,3]-modelparams[,3])^2)), 3)
+  rmse.b3 <- round(sqrt(mean((parameters[,3]-modelparams[,3])^2)), 3)
+  # combine results
+  result <- data.frame(sample.size = sample.size,
+                       bias.a = bias.a,
+                       bias.b1 = bias.b1,
+                       bias.b2 = bias.b2,
+                       bias.b3 = bias.b3,
+                       rmse.a = rmse.a,
+                       rmse.b1 = rmse.b1,
+                       rmse.b2 = rmse.b2,
+                       rmse.b3 = rmse.b3)
+  # return data frame
+  return(result)
+}
+```
+
+```{r, echo = FALSE}
+
+# define empty data frame to store simulation results
+  result <- data.frame(sample.size = 0,
+                       bias.a = 0,
+                       bias.d1 = 0,
+                       bias.d2 = 0,
+                       bias.d3 = 0,
+                       rmse.a = 0,
+                       rmse.d1 = 0,
+                       rmse.d2 = 0,
+                       rmse.d3 = 0)
+  
+```
+For each sample size simulation, the data set was simulated 100 times. Performance was evaluated by computing the average bias and root mean square error (RMSE) for the parameter estimates across 100 replications for each sample size. The parameters comprise one discrimination and three threshold / difficulty parameters. The bias and RMSE values were averaged across each sample size in the table below.
+
+```{r, echo = FALSE}
+# simulate 100 repetitions
+myseed <- sample.int(n = 1000000, size = 100)
+# N = 500
+for (i in 1:length(myseed)) {
+  result[i,] <- itemrecovery(model = model, sample.size = 500, seed = myseed[i])
+}
+# save mean simulated parameters
+n500 <- result %>% summarise(across(where(is.numeric), mean))
+
+# N = 1000
+for (i in 1:length(myseed)) {
+  result[i,] <- itemrecovery(model = model, sample.size = 1000, seed = myseed[i])
+}
+# save mean simulated parameters
+n1000 <- result %>% summarise(across(where(is.numeric), mean))
+
+# N = 1500
+for (i in 1:length(myseed)) {
+  result[i,] <- itemrecovery(model = model, sample.size = 1500, seed = myseed[i])
+}
+# save mean simulated parameters
+n1500 <- result %>% summarise(across(where(is.numeric), mean))
+
+# N = 1500
+for (i in 1:length(myseed)) {
+  result[i,] <- itemrecovery(model = model, sample.size = 2000, seed = myseed[i])
+}
+# save mean simulated parameters
+n2000 <- result %>% summarise(across(where(is.numeric), mean))
+
+simulationResults <- rbind(n500,
+                           n1000,
+                           n1500,
+                           n2000)
+
+# display results
+kable(simulationResults[1:5],
+      digits = 3,
+      align = "c",
+      caption = "Simulation Results for Parameter Recovery 
+                at Different Sample Sizes",
+      col.names = c("Sample Size",
+                    "Discrimination Bias",
+                    "Threshold 1 Bias",
+                    "Threshold 2 Bias",
+                    "Threshold 3 Bias"),
+      bottomrule = NULL,
+      booktabs = TRUE) %>%
+  column_spec(1, width = '1.2in') %>%
+  column_spec(2:5, width = '1in')
+
+kable(simulationResults[c(1, 6:9)],
+      digits = 3,
+      align = "c",
+      col.names = c("Sample Size",
+                    "Discrimination RMSE",
+                    "Threshold 1 RMSE",
+                    "Threshold 2 RMSE",
+                    "Threshold 3 RMSE"),
+      booktabs=TRUE) %>%
+  column_spec(1, width = '1.2in') %>%
+  column_spec(2:5, width = '1in') %>%
+  kable_styling(latex_options = "HOLD_position")
 
 ```
 
+The simulation results show that the model parameters were recovered fairly well even with a sample size of 500 (remember that the existing data set comprised 2,177 participants). With increasing sample sizes, the biases and errors decreased; however, they were small to begin with. Thus, it can be concluded that for replication of the current study, a sample size of between 500 and 1000 are sufficient to adequately recover all model parameters.
+
+\newpage
 
 # Discussion
 
@@ -361,14 +509,18 @@ par(mfrow = c(3, 3), mar=c(3, 3, 3, 3)) # set display grid
 for (i in 1:length(var_name)){
   x = as.numeric(unlist(PHQ_num[var_name[i]][,1]))
   # create histogram
-  hist(x, prob = TRUE, breaks = seq(min(x-0.5), max(x+0.5), length.out = 10),
-       ylim = c(0,1), main = paste("Item ", i), col = "#69b3a2")
+  hist(x, prob = TRUE, 
+       breaks = seq(min(x-0.5), max(x+0.5), length.out = 10),
+       ylim = c(0,1), 
+       main = paste("Item ", i), 
+       col = "#69b3a2")
   # create normal distribution
   xfit <- seq(min(x), max(x), length = 2177)
   yfit <- dnorm(xfit, mean=mean(x), sd=sd(x)) 
   # add curve to plot
   lines(xfit, yfit, col="darkslategray", lwd=2)
 }
+
 
 # Figure 2: Histogram of Sum PHQ-9 Scores
 
@@ -408,8 +560,6 @@ fviz_pca_var(PHQ_PCA, col.var = "cos2",
 par(mfrow = c(3, 3), mar=c(3, 2, 3, 2)) # set display grid
 plot(mod2, lwd=1, type = "OCCu", ylim = c(0,1), cex.main = 0.8)
 
-
-
 # Figure 6: Item And Test Information Function
 
 par(mfrow = c(2, 1)) # set display grid
@@ -425,6 +575,8 @@ plot(mod2, type = "IIC", items=0,
 
 
 ```
+
+\newpage
 
 ## Code for Replicating Analyses
 
@@ -479,6 +631,106 @@ mod2
 anova(mod1, mod2)
 # extract parameters
 coef(mod2)
+
+
+# Parameter Recovery and Sample Size Estimation
+
+library(mirt)
+# fit grm model on existing data
+model <- mirt(PHQ_num, 
+              itemtype = "graded")
+# function for computing parameter recovery
+itemrecovery <- function(model, sample.size, seed) {
+  # set seed
+  set.seed(seed)
+  # extract original model parameters
+  modelparams <- as.data.frame(coef(model, simplify = TRUE)$items)
+  # simulate new data based on model parameters
+  dat <- simdata(model = model, 
+                 N = sample.size)
+  # fit grm model on simulated data
+  modGRM <- mirt(data = dat, 
+                 itemtype = 'graded', 
+                 verbose = FALSE, 
+                 SE = TRUE)
+  # extract item parameters
+  parameters <- as.data.frame(coef(modGRM, simplify = TRUE)$items)
+  # compute bias
+  bias.a <- round(mean(parameters[,1]-modelparams[,1]), 3)
+  bias.b1 <- round(mean(parameters[,2]-modelparams[,2]), 3)
+  bias.b2 <- round(mean(parameters[,3]-modelparams[,3]), 3)
+  bias.b3 <- round(mean(parameters[,4]-modelparams[,4]), 3)
+  rmse.a <- round(sqrt(mean((parameters[,1]-modelparams[,1])^2)), 3)
+  rmse.b1 <- round(sqrt(mean((parameters[,2]-modelparams[,2])^2)), 3)
+  rmse.b2 <- round(sqrt(mean((parameters[,3]-modelparams[,3])^2)), 3)
+  rmse.b3 <- round(sqrt(mean((parameters[,3]-modelparams[,3])^2)), 3)
+  # combine results
+  result <- data.frame(sample.size = sample.size,
+                       bias.a = bias.a,
+                       bias.b1 = bias.b1,
+                       bias.b2 = bias.b2,
+                       bias.b3 = bias.b3,
+                       rmse.a = rmse.a,
+                       rmse.b1 = rmse.b1,
+                       rmse.b2 = rmse.b2,
+                       rmse.b3 = rmse.b3)
+  # return data frame
+  return(result)
+}
+# define empty data frame to store simulation results
+result <- data.frame(sample.size = 0,
+                       bias.a = 0,
+                       bias.d1 = 0,
+                       bias.d2 = 0,
+                       bias.d3 = 0,
+                       rmse.a = 0,
+                       rmse.d1 = 0,
+                       rmse.d2 = 0,
+                       rmse.d3 = 0)
+# simulate 100 repetitions
+myseed <- sample.int(n = 1000000, size = 100)
+# N = 500
+for (i in 1:length(myseed)) {
+  result[i,] <- itemrecovery(model = model, 
+                             sample.size = 500, 
+                             seed = myseed[i])
+}
+# save mean simulated parameters
+n500 <- result %>% summarise(across(where(is.numeric), mean))
+
+# N = 1000
+for (i in 1:length(myseed)) {
+  result[i,] <- itemrecovery(model = model, 
+                             sample.size = 1000, 
+                             seed = myseed[i])
+}
+# save mean simulated parameters
+n1000 <- result %>% summarise(across(where(is.numeric), mean))
+
+# N = 1500
+for (i in 1:length(myseed)) {
+  result[i,] <- itemrecovery(model = model, 
+                             sample.size = 1500, 
+                             seed = myseed[i])
+}
+# save mean simulated parameters
+n1500 <- result %>% summarise(across(where(is.numeric), mean))
+
+# N = 1500
+for (i in 1:length(myseed)) {
+  result[i,] <- itemrecovery(model = model, 
+                             sample.size = 2000, 
+                             seed = myseed[i])
+}
+# save mean simulated parameters
+n2000 <- result %>% summarise(across(where(is.numeric), mean))
+
+simulationResults <- rbind(n500,
+                           n1000,
+                           n1500,
+                           n2000)
+# display results
+simulationResults
 
 ```
 
